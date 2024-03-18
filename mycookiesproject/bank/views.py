@@ -5,6 +5,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import BankAccount
 
+def home(request):
+    if request.user.is_authenticated:
+        return redirect('bank_details')  
+    return render(request, 'home.html')
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
@@ -12,7 +17,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # Increment successful login counter in cookies
+           
             success_logins = request.session.get('success_logins', 0)
             request.session['success_logins'] = success_logins + 1
             return redirect('bank_details')
@@ -29,7 +34,13 @@ def logout_view(request):
 def bank_details(request):
     try:
         bank_account = BankAccount.objects.get(user=request.user)
+        print("Bank Account found:", bank_account) 
     except BankAccount.DoesNotExist:
-        # If BankAccount doesn't exist for the user, create a new one
-        bank_account = BankAccount.objects.create(user=request.user, account_number='', ifsc_code='', balance=0.0)
+        print("Bank Account does not exist for user:", request.user) 
+        bank_account = BankAccount.objects.create(
+            
+            account_number='4556565656',
+            ifsc_code='SBI4545454',
+            balance=4500.00
+        )
     return render(request, 'bank_details.html', {'bank_account': bank_account})
